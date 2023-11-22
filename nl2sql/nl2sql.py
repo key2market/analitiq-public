@@ -229,7 +229,11 @@ def main() -> int:
     from js_code_plot_generator import JSCodePlotGenerator
     from rsb import RequestsSummaryBuilder
 
-    st.set_page_config(layout="wide")
+    st.set_page_config(
+        layout="wide",
+        page_icon="docs/img/analitiq_logo.png",
+        page_title="Analitiq POC"
+    )
     # st.title("Natural Language to SQL Query Executor")
     # st.markdown(
     #     "_A proof-of-concept to demonstrate the power of large "
@@ -306,10 +310,12 @@ def main() -> int:
         # openai libs access the key via this environment variable
         os.environ["OPENAI_API_KEY"] = st.session_state.openai_api_key
 
-        model_name = st.selectbox(
-            "Choose OpenAI model",
-            ("_Choose a model_", "gpt-3.5-turbo", "text-davinci-003"),
-        )
+        # model_name = st.selectbox(
+        #     "Choose OpenAI model",
+        #     ("_Choose a model_", "gpt-3.5-turbo", "text-davinci-003"),
+        # )
+
+        model_name = "gpt-4"
 
         if str(model_name).startswith("_"):
             return 4
