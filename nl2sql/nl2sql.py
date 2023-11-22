@@ -230,25 +230,31 @@ def main() -> int:
     from rsb import RequestsSummaryBuilder
 
     st.set_page_config(layout="wide")
-    st.title("Natural Language to SQL Query Executor")
+    # st.title("Natural Language to SQL Query Executor")
+    # st.markdown(
+    #     "_A proof-of-concept to demonstrate the power of large "
+    #     "language models(LLMS) in rapidly and effectively extracting valuable insights from "
+    #     "your data. We greatly appreciate your thoughts and suggestions. "
+    #     "Visit us at www.sagedata.net._"
+    # )
+
+    st.title("Analitiq POC")
     st.markdown(
-        "_A proof-of-concept to demonstrate the power of large "
-        "language models(LLMS) in rapidly and effectively extracting valuable insights from "
-        "your data. We greatly appreciate your thoughts and suggestions. "
-        "Visit us at www.sagedata.net._"
+        "_A proof-of-concept synthetic data analyst to let your data talk back to you. "
+        "POC settings are connected to sample e-commerce database._"
     )
 
     # Left pane for Redshift db_engine input controls
     with st.sidebar:
-        st.image("docs/img/sagedata_logo.png", width=230)
-        st.header("OpenAI API Key")
-        openai_api_key = st.text_input("OpenAI API Key", key="openai_api_key", type="password")
-        "[Get an OpenAI API key](https://platform.openai.com/account/api-keys)"
-        btn_openai_api_key = st.button("Enter")
+        st.image("docs/img/analitiq_logo.png", use_column_width=True)
+        # st.header("OpenAI API Key")
+        # openai_api_key = st.text_input("OpenAI API Key", key="openai_api_key", type="password")
+        # "[Get an OpenAI API key](https://platform.openai.com/account/api-keys)"
+        # btn_openai_api_key = st.button("Enter")
     
         st.header("Connect to Database")
-        # db_credentials = st.secrets.get("db_credentials", {})
-        db_credentials = {}
+        db_credentials = st.secrets.get("db_credentials", {})
+        # db_credentials = {}
         dialect = st.selectbox("Database", ("redshift", "postgresql"))
         host = st.text_input("Host", value=db_credentials.get("host", ""))
         port = st.number_input(
@@ -287,13 +293,15 @@ def main() -> int:
 
         # btn_openai_api_key = st.button("Enter")
 
-        if not openai_api_key and not btn_openai_api_key:
-            return 3
-        session_openapi_key = st.session_state.get("openai_api_key")
+        # if not openai_api_key and not btn_openai_api_key:
+        #     return 3
+        # session_openai_key = st.session_state.get("openai_api_key")
 
         # keep streamlit state that openai_api_key had been entered
-        if not session_openapi_key or session_openapi_key != openai_api_key:
-            st.session_state.openai_api_key = openai_api_key
+        # if not session_openai_key or session_openai_key != openai_api_key:
+        #     st.session_state.openai_api_key = openai_api_key
+
+        st.session_state.openai_api_key = st.secrets.get("openai_api_key", st.session_state.get("openai_api_key", ""))
 
         # openai libs access the key via this environment variable
         os.environ["OPENAI_API_KEY"] = st.session_state.openai_api_key
