@@ -371,7 +371,7 @@ def main() -> int:
         ) and not st.session_state.get("dbt_sources_yaml_str")
 
         run = st.button(
-            "Run",
+            "Ask",
             disabled=not st.session_state.get("query_str") or yaml_cfg_is_wrong,
             on_click=lambda: query_history.append({"user": st.session_state.get("query_str")}),
         )
