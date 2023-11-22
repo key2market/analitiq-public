@@ -100,7 +100,7 @@ def create_llama_db_wrapper(
 def build_table_schema_index(
     _sql_database: SQLDatabase, model_name: str, **kwargs: Any
 ) -> tuple[Any, Any]:
-    """Build a table schema index from the SQL database.
+    """Building a table schema index from the SQL database.
 
     Args:
         _sql_database (SQLDatabase): SQL database
@@ -244,8 +244,8 @@ def main() -> int:
 
     st.title("Analitiq POC")
     st.markdown(
-        "_A proof-of-concept synthetic data analyst to let your data talk back to you. "
-        "POC settings are connected to sample e-commerce database._"
+        "_A proof-of-concept Analitiq application to let your data talk back to you. "
+        "This app is connected to a sample e-commerce database of a fictional website, where users buy and sell tickets online for sporting events, shows, and concerts. More details about the data at https://www.analitiq.ai/sample-data-structure/._"
     )
 
     # Left pane for Redshift db_engine input controls
@@ -330,8 +330,7 @@ def main() -> int:
         # Create LLama DB wrapper
         st.markdown(
             (
-                ":blue[Create DB wrapper."
-                f" Inspect tables and views inside "
+                ":blue[Inspecting data in "
                 f":green[**_{dbname}.{schema}_**]]"
             )
         )
@@ -357,15 +356,15 @@ def main() -> int:
         else:
             st.session_state["query_history"] = query_history
 
-        st.text_input("Enter your NL query:", key="query_str")
+        st.text_input("Ask Analitiq:", key="query_str")
 
         dbt_sources_yaml_toggle = st.checkbox(
-            "Add DBT sources.yaml for additional context",
+            "Add data description for additional context",
             key="dbt_sources_yaml_toggle",
         )
 
         if dbt_sources_yaml_toggle:
-            st.text_area("Paste your DBT sources.yaml:", key="dbt_sources_yaml_str")
+            st.text_area("Paste your data description:", key="dbt_sources_yaml_str")
 
         yaml_cfg_is_wrong = st.session_state.get(
             "dbt_sources_yaml_toggle"
