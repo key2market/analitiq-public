@@ -401,10 +401,10 @@ def main() -> int:
                 ],
             )
 
-            st.markdown(
-                ":blue[Query the composable graph index consisting of DBT "
-                "sources.yaml index and the table-schema index]"
-            )
+            # st.markdown(
+            #    ":blue[Query the composable graph index consisting of DBT "
+            #    "sources.yaml index and the table-schema index]"
+            #)
         else:
             st.markdown(":blue[Query the table-schema index]")
 
