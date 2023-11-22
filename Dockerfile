@@ -17,11 +17,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the current directory contents into the container at /app
 COPY . /app
 
-ENV CHROMA_DB_HOST="<Your Chroma DB Server Host>"
-ENV CHROMA_DB_PORT="<Your Chroma DB Server Port>"
+ENV CHROMA_DB_HOST="18.195.88.154"
+ENV CHROMA_DB_PORT="8000"
 
-# Expose port 8501 for Streamlit
-EXPOSE 8501
+# Expose port 80 for Streamlit
+EXPOSE 80
 
 # Run app.py when the container launches
 CMD ["streamlit", "run", "nl2sql/nl2sql.py"]

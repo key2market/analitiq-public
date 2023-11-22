@@ -316,7 +316,7 @@ def main() -> int:
 
         cache_invalidation_triggers = {
             "connection_string": connection_string,
-            "openai_api_key": openai_api_key,
+            "openai_api_key": st.session_state.openai_api_key,
             "model_name": model_name,
             "schema": str(schema),
         }
