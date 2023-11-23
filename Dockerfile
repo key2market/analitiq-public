@@ -24,4 +24,4 @@ ENV CHROMA_DB_PORT="8000"
 EXPOSE 80
 
 # Run app.py when the container launches
-CMD ["streamlit", "run", "nl2sql/nl2sql.py"]
+CMD ["streamlit", "run", "app/core.py"]
