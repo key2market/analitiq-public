@@ -44,7 +44,7 @@ schema = "your-schema"
 ```
 
 ### Context
-Providing information about your table structure in `.streamlit/secrets.toml` enhances query understanding and accuracy.
+Providing information about your table structure in `context/sample_db.txt` enhances query understanding and accuracy.
 
 ## Run Analitiq on localhost
 Navigate to the cloned repository directory and run:

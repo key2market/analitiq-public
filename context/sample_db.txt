@@ -1,4 +1,3 @@
-e
 Analitiq sample database is a playground where you can explore and understand what Analitiq is capable of doing. The sample database represents data for a fictional website, where users buy and sell tickets online for sporting events, shows, and concerts. In this data, Analitiq can identify ticket movement over time, success rates for sellers, and the best-selling events, venues, and seasons. Stakeholders can use these insights to provide incentives to buyers and sellers who frequent the site, to attract new users, and to drive advertising and promotions.
 
 Here is an example query you would have to run to find the top five sellers in San Diego, based on the number of tickets sold in 2008:
