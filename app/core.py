@@ -256,7 +256,7 @@ def main() -> int:
         </style>
     """, unsafe_allow_html=True)
 
-    st.title("Ask Analitiq")
+    st.title("Step 2 - Ask Analitiq")
 
     st.markdown(
         "Transforming Conversations into Insights.\n"
