@@ -1,5 +1,4 @@
 """Streamlit app generate SQL statements from natural language queries."""
-import collections
 import os
 import sys
 from typing import Any, Optional, Union
@@ -19,7 +18,7 @@ from llama_index import (
     SQLDatabase,
 )
 
-from llama_index import SimpleWebPageReader
+from llama_index import SimpleDirectoryReader
 
 from llama_index.composability import ComposableGraph
 from llama_index.indices.base import BaseGPTIndex
@@ -347,10 +346,8 @@ def main() -> int:
                 index_to_query = table_schema_index
 
                 if "is_sample_data_available" not in st.session_state:
-                    # Read sample data structure
-                    sample_data_docs = SimpleWebPageReader(html_to_text=True).load_data(
-                        ["https://www.analitiq.ai/sample-data-structure/"]
-                    )
+                    sample_data_docs = SimpleDirectoryReader(input_dir="context").load_data()
+                    print(f"Loaded {len(sample_data_docs)} documents.")
                     metadata_index = GPTListIndex.from_documents(sample_data_docs)
                     index_to_query = ComposableGraph.from_indices(
                         GPTListIndex,
@@ -423,164 +420,6 @@ def main() -> int:
                 }
             })
 
-        # if str(model_name).startswith("_"):
-        #     return 4
-
-        # cache_invalidation_triggers = {
-        #     "connection_string": connection_string,
-        #     "openai_api_key": st.session_state.openai_api_key,
-        #     "model_name": model_name,
-        #     "schema": str(schema),
-        # }
-
-        # # Create LLama DB wrapper
-        # st.markdown(
-        #     (
-        #         ":blue[Inspecting data in "
-        #         f":green[**_{dbname}.{schema}_**]]"
-        #     )
-        # )
-
-        # sql_database = create_llama_db_wrapper(db_engine, **cache_invalidation_triggers)
-
-        # with st.expander(f"Discovered tables in {dbname}.{schema}"):
-        #     st.write(sql_database._all_tables)
-
-        # # build llama sqlindex
-        # st.markdown(":blue[Build a table-schema index.]")
-        # table_schema_index, context_builder = build_table_schema_index(
-        #     sql_database, **cache_invalidation_triggers
-        # )
-
-        # query_history = st.session_state.get("query_history", collections.deque(maxlen=10))
-
-        # if query_history:
-        #     for idx, msg in enumerate(query_history):
-        #         message(msg["user"], is_user=True, key=str(f"{idx}_user"))
-        #         if msg.get("generated"):
-        #             message(msg.get("generated"), is_user=False, key=str(f"{idx}_sql"))
-        # else:
-        #     st.session_state["query_history"] = query_history
-
-        # st.text_input("Ask Analitiq:", key="query_str")
-
-        # dbt_sources_yaml_toggle = st.checkbox(
-        #     "Add data description for additional context",
-        #     key="dbt_sources_yaml_toggle",
-        # )
-
-        # if dbt_sources_yaml_toggle:
-        #     st.text_area("Paste your data description:", key="dbt_sources_yaml_str")
-
-        # yaml_cfg_is_wrong = st.session_state.get(
-        #     "dbt_sources_yaml_toggle"
-        # ) and not st.session_state.get("dbt_sources_yaml_str")
-
-        # run = st.button(
-        #     "Ask",
-        #     disabled=not st.session_state.get("query_str") or yaml_cfg_is_wrong,
-        #     on_click=lambda: query_history.append({"user": st.session_state.get("query_str")}),
-        # )
-
-        # if not run:
-        #     return 5
-
-        # dbt_sources_yaml_toggle = st.session_state.get("dbt_sources_yaml_toggle", False)
-        # dbt_sources_yaml_str = st.session_state.get("dbt_sources_yaml_str", "")
-
-        # cache_invalidation_triggers["dbt_sources_yaml_toggle"] = dbt_sources_yaml_toggle
-        # cache_invalidation_triggers["dbt_sources_yaml_str"] = dbt_sources_yaml_str
-
-        # index_to_query = table_schema_index
-
-        # if dbt_sources_yaml_toggle:
-        #     metadata_index = GPTListIndex.from_documents([Document(dbt_sources_yaml_str)])
-
-        #     # build ComposableGraph based on table schema index and
-        #     # DBT sources yaml index
-        #     index_to_query = ComposableGraph.from_indices(
-        #         GPTListIndex,
-        #         [table_schema_index, metadata_index],
-        #         index_summaries=[
-        #             "Tables' schemas generated via database introspection",
-        #             "DBT sources yaml",
-        #         ],
-        #     )
-
-        #     # st.markdown(
-        #     #    ":blue[Query the composable graph index consisting of DBT "
-        #     #    "sources.yaml index and the table-schema index]"
-        #     #)
-        # else:
-        #     st.markdown(":blue[Query the table-schema index]")
-
-        # # return a condensed summary for the last query
-        # condensed_query_str = RequestsSummaryBuilder.build_summary(
-        #     map(lambda x: x["user"], query_history),
-        #     model_name=str(model_name),
-        # )
-        # # TODO: add the condensed query to the history of user messages
-        # LOGGER.info("Generated condensed query: %s", condensed_query_str)
-
-        # # cached resource
-        # sql_context_container = build_sql_context_container(
-        #     context_builder,
-        #     index_to_query,
-        #     condensed_query_str,
-        #     **cache_invalidation_triggers,
-        # )
-
-        # with st.expander("SQL context"):
-        #     st.markdown(
-        #         ":blue[Generated context for SQL query preparation:] "
-        #         f":green[ {sql_context_container.context_str} ]"
-        #     )
-
-        # # return
-        # st.markdown(":blue[Prepare and execute query...]")
-
-        # response: Union[RESPONSE_TYPE, None] = None
-        # try:
-        #     # cached resource
-        #     index = create_sql_struct_store_index(
-        #         sql_database,
-        #         _sql_context_container=sql_context_container,
-        #         connection_string=connection_string,
-        #         query_str=condensed_query_str,
-        #     )
-        #     # cached resource
-        #     response = query_sql_structure_store(
-        #         _index=index,
-        #         query_str=condensed_query_str,
-        #         **cache_invalidation_triggers,
-        #     )
-        # except Exception as ex:
-        #     st.markdown(
-        #         ":red[We couldn't generate a valid SQL query. "
-        #         "Please try to refine your question with schema, "
-        #         f"table or column names. Exception info:\n{ex}]"
-        #     )
-        #     return 6
-
-        # if not response:
-        #     return 7
-
-        # sql_query = response.extra_info["sql_query"]
-        # query_history[-1]["generated"] = response.extra_info["sql_query"]
-        # message(sql_query, key=str(f"{len(query_history)}_sql"))
-        # df = pd.DataFrame(response.extra_info["result"])
-        # st.dataframe(df)
-
-        # st.markdown(":blue[Plotting the data. Please wait...]")
-
-        # html_plot_js = JSCodePlotGenerator(sql_query=sql_query, data=df).generate_plot(
-        #     model_name=str(model_name)
-        # )
-
-        # with st.expander("JS Plot Code"):
-        #     st.code(html_plot_js, language="javascript")
-
-        # html(html_plot_js, scrolling=True, height=500)
     except Exception as ex:
         st.markdown(f":red[{ex}]")
         raise ex
