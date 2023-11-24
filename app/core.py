@@ -258,6 +258,11 @@ def main() -> int:
 
     st.title("Ask Analitiq")
 
+    st.markdown(
+        "Transforming Conversations into Insights.\n"
+        "Try asking _Show me my top 10 customers_ or _Give me revenues by month for 2018_"
+    )
+
     # Left pane for db_engine input controls
     with st.sidebar:
         st.image("docs/img/analitiq_logo.png", use_column_width=True)
@@ -265,7 +270,6 @@ def main() -> int:
         st.header("Step 1 - Connect to Database")
 
         st.markdown(
-            "_Transforming Conversations into Insights. Chat, Query, and Visualize - Your AI-Powered Data Analyst.\n"
             "This app is connected to a sample e-commerce database of a fictional website, where users buy and sell tickets online for sporting events, shows, and concerts. "
             "More details about the data at [Analitiq website](https://www.analitiq.ai/sample-data-structure/)._"
         )
