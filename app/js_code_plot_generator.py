@@ -1,4 +1,4 @@
-"""Class to generate JS plots for the NL2SQL project."""
+"""Class to generate JS plots for the Analitiq."""
 import io
 from typing import Type, TypeVar
 
@@ -28,7 +28,7 @@ T = TypeVar("T", bound="JSCodePlotGenerator")
 
 
 class JSCodePlotGenerator(object):
-    """Class to generate JS plots for the NL2SQL project."""
+    """Class to generate JS plots for the Analitiq project."""
 
     def __init__(self: Type[T], sql_query: str, data: pd.DataFrame) -> None:
         """Initialize the plot generator.
@@ -54,7 +54,7 @@ class JSCodePlotGenerator(object):
         """Generate the plot."""
         if self.data.empty:
             # TODO: create template
-            return "<p>Nothing to Show</p>"
+            return "<p>No data available.</p>"
 
         data_variable_name = "queried_data"
         llm = OpenAI(temperature=0, model_name=model_name)

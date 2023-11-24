@@ -259,8 +259,9 @@ def main() -> int:
 
     st.title("Analitiq POC")
     st.markdown(
-        "_A proof-of-concept Analitiq application to let your data talk back to you. "
-        "This app is connected to a sample e-commerce database of a fictional website, where users buy and sell tickets online for sporting events, shows, and concerts. More details about the data at https://www.analitiq.ai/sample-data-structure/._"
+        "_Transforming Conversations into Insights. Chat, Query, and Visualize - Your AI-Powered Data Analyst.\n"
+        "This app is connected to a sample e-commerce database of a fictional website, where users buy and sell tickets online for sporting events, shows, and concerts."
+        "More details about the data at [Analitiq website](https://www.analitiq.ai/sample-data-structure/)._"
     )
 
     # Left pane for Redshift db_engine input controls
