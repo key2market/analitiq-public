@@ -234,7 +234,7 @@ def main() -> int:
     st.set_page_config(
         layout="wide",
         page_icon="docs/img/analitiq_logo.png",
-        page_title="Analitiq POC"
+        page_title="Analitiq Analyst"
     )
 
     st.markdown("""
@@ -256,33 +256,36 @@ def main() -> int:
         </style>
     """, unsafe_allow_html=True)
 
-    st.title("Analitiq POC")
-    st.markdown(
-        "_Transforming Conversations into Insights. Chat, Query, and Visualize - Your AI-Powered Data Analyst.\n"
-        "This app is connected to a sample e-commerce database of a fictional website, where users buy and sell tickets online for sporting events, shows, and concerts."
-        "More details about the data at [Analitiq website](https://www.analitiq.ai/sample-data-structure/)._"
-    )
+    st.title("Ask Analitiq")
 
-    # Left pane for Redshift db_engine input controls
+    # Left pane for db_engine input controls
     with st.sidebar:
         st.image("docs/img/analitiq_logo.png", use_column_width=True)
     
-        st.header("Connect to Database")
+        st.header("Step 1 - Connect to Database")
+
+        st.markdown(
+            "_Transforming Conversations into Insights. Chat, Query, and Visualize - Your AI-Powered Data Analyst.\n"
+            "This app is connected to a sample e-commerce database of a fictional website, where users buy and sell tickets online for sporting events, shows, and concerts. "
+            "More details about the data at [Analitiq website](https://www.analitiq.ai/sample-data-structure/)._"
+        )
+
         db_credentials = st.secrets.get("db_credentials", {})
 
-        dialect = st.selectbox("Database", ("redshift", "postgresql"))
-        host = st.text_input("Host", value=db_credentials.get("host", ""))
-        port = st.number_input(
-            "Port", min_value=1, max_value=65535, value=db_credentials.get("port", 5439)
-        )
-        dbname = st.text_input("Database name", value=db_credentials.get("database", ""))
-        user = st.text_input("Username", value=db_credentials.get("username", ""))
-        password = st.text_input(
-            "Password", type="password", value=db_credentials.get("password", "")
-        )
-        schema = st.text_input(
-            "Schema", disabled=True, value=db_credentials.get("schema", "public")
-        )
+        st.expander("Database credentials:"):
+            dialect = st.selectbox("Database", ("redshift", "postgresql"))
+            host = st.text_input("Host", value=db_credentials.get("host", ""))
+            port = st.number_input(
+                "Port", min_value=1, max_value=65535, value=db_credentials.get("port", 5439)
+            )
+            dbname = st.text_input("Database name", value=db_credentials.get("database", ""))
+            user = st.text_input("Username", value=db_credentials.get("username", ""))
+            password = st.text_input(
+                "Password", type="password", value=db_credentials.get("password", "")
+            )
+            schema = st.text_input(
+                "Schema", disabled=True, value=db_credentials.get("schema", "public")
+            )
 
         connect_button = st.button("Connect")
 
