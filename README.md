@@ -24,8 +24,6 @@ sudo service docker start
 Clone the repository and build the Docker image:
 ```
 git clone {REPO URL}
-cd app
-sudo docker build -t dockerfile .
 ```
 
 ## Setting up
@@ -43,23 +41,24 @@ database = "your-database"
 schema = "your-schema"
 ```
 
-### Context
+### Loading the Context
 Providing information about your table structure in `context/sample_db.txt` enhances query understanding and accuracy.
 
-## Run Analitiq on localhost
+### Launch the Analitiq app
+After the repo is cloned, navigate to the directory of the docker file and launch the docker container.
+```
+sudo docker build -t dockerfile .
+```
+Once the pre-requisites have been installed and docker container is running you can access the app on port 80 of your browser by navigating to `http://localhost:8501`
+
+#### To run Analitiq on localhost
 Navigate to the cloned repository directory and run:
 ```
 pip install -r requirements.txt
 streamlit run app/core.py
 ```
 
-Access the app at http://localhost:8501
-
-Once the app is running in your browser, you can
-1. Input or edit database connection details.
-2. Input your questions, just like you would with a data analyst and click Ask.
-3. If you don't get the desired results then be precise about the tables and columns that contain the requested data in your natural language query.
-
+If you don't get the desired results try to be precise about the tables and columns that contain the requested data in your prompt.
 
 ![](docs/img/app_image.png)
 
