@@ -1,6 +1,8 @@
 # AI Data Analyst by Analitiq
 Analitiq is a cutting-edge application designed to revolutionize the way businesses interact with their data. By leveraging the power of natural language processing, Analitiq allows users to input queries through a simple chat interface and effortlessly generates SQL queries compatible with PostgreSQL, Redshift, and other SQLAlchemy-supported databases. This user-friendly interface demystifies data analysis, making it accessible to a wider range of professionals, regardless of their technical expertise.
 
+![](docs/img/app_image.png)
+
 ## Table of Contents
 1. [Installing Requirements](#installing-requirements)
 2. [Setting Up](#setting-up)
@@ -59,8 +61,6 @@ streamlit run app/core.py
 ```
 
 If you don't get the desired results try to be precise about the tables and columns that contain the requested data in your prompt.
-
-![](docs/img/app_image.png)
 
 ## Limitations
 - AWS Redshift is the only supported database at the moment.
