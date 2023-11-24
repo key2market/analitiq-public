@@ -272,7 +272,7 @@ def main() -> int:
 
         db_credentials = st.secrets.get("db_credentials", {})
 
-        st.expander("Database credentials:"):
+        with st.expander("Database credentials:"):
             dialect = st.selectbox("Database", ("redshift", "postgresql"))
             host = st.text_input("Host", value=db_credentials.get("host", ""))
             port = st.number_input(
