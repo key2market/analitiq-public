@@ -22,6 +22,8 @@ There is an existing javascript global variable called '{data_variable_name}' th
 the data from the query above as a json object.
 Create javascript code that uses plotly.js to visualize it in the most sensible way possible.
 Plot inside 'plot' div. Return only the javascript code with no other explanations.
+Make sure your response only includes javascript code.
+Do not add any explanation to your response.
 """
 
 T = TypeVar("T", bound="JSCodePlotGenerator")
@@ -50,6 +52,7 @@ class JSCodePlotGenerator(object):
                 continue
         return df
 
+    # TODO: gpt-4?
     def generate_plot(self: Type[T], model_name: str = "gpt-3.5-turbo") -> str:
         """Generate the plot."""
         if self.data.empty:
