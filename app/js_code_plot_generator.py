@@ -52,8 +52,7 @@ class JSCodePlotGenerator(object):
                 continue
         return df
 
-    # TODO: gpt-4?
-    def generate_plot(self: Type[T], model_name: str = "gpt-3.5-turbo") -> str:
+    def generate_plot(self: Type[T], model_name: str = "gpt-4") -> str:
         """Generate the plot."""
         if self.data.empty:
             # TODO: create template

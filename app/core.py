@@ -314,6 +314,35 @@ def main() -> int:
 
         model_name = "gpt-4"
 
+        cache_invalidation_triggers = {
+            "connection_string": connection_string,
+            "openai_api_key": st.session_state.openai_api_key,
+            "model_name": model_name,
+            "schema": str(schema),
+        }
+
+        sql_database = create_llama_db_wrapper(db_engine, **cache_invalidation_triggers)
+
+        table_schema_index, context_builder = build_table_schema_index(
+            sql_database, **cache_invalidation_triggers
+        )
+
+        index_to_query = table_schema_index
+
+        if "is_sample_data_available" not in st.session_state:
+            sample_data_docs = SimpleDirectoryReader(input_dir="context").load_data()
+            print(f"Loaded {len(sample_data_docs)} documents.")
+            metadata_index = GPTListIndex.from_documents(sample_data_docs)
+            index_to_query = ComposableGraph.from_indices(
+                GPTListIndex,
+                [table_schema_index, metadata_index],
+                index_summaries=[
+                    "Tables' schemas generated via database introspection",
+                    "DBT sources yaml",
+                ],
+            )
+            st.session_state.is_sample_data_available = True
+
         if "messages" not in st.session_state:
             st.session_state.messages = []
         
@@ -334,37 +363,7 @@ def main() -> int:
                 st.markdown(prompt)
 
             with st.chat_message("assistant"):
-                response = ""
                 st.markdown(":blue[Prepare and execute query...]")
-
-                cache_invalidation_triggers = {
-                    "connection_string": connection_string,
-                    "openai_api_key": st.session_state.openai_api_key,
-                    "model_name": model_name,
-                    "schema": str(schema),
-                }
-
-                sql_database = create_llama_db_wrapper(db_engine, **cache_invalidation_triggers)
-
-                table_schema_index, context_builder = build_table_schema_index(
-                    sql_database, **cache_invalidation_triggers
-                )
-
-                index_to_query = table_schema_index
-
-                if "is_sample_data_available" not in st.session_state:
-                    sample_data_docs = SimpleDirectoryReader(input_dir="context").load_data()
-                    print(f"Loaded {len(sample_data_docs)} documents.")
-                    metadata_index = GPTListIndex.from_documents(sample_data_docs)
-                    index_to_query = ComposableGraph.from_indices(
-                        GPTListIndex,
-                        [table_schema_index, metadata_index],
-                        index_summaries=[
-                            "Tables' schemas generated via database introspection",
-                            "DBT sources yaml",
-                        ],
-                    )
-                    st.session_state.is_sample_data_available = True
 
                 history_user_content = [
                     x["content"] for x in st.session_state.messages if x["role"] == "user"
@@ -407,25 +406,31 @@ def main() -> int:
                     return 7
                 
                 sql_query = response.extra_info["sql_query"]
-                st.markdown(sql_query)
-                df = pd.DataFrame(response.extra_info["result"])
-                st.dataframe(df)
-                st.markdown(":blue[Plotting the data. Please wait...]")
-                html_plot_js = JSCodePlotGenerator(sql_query=sql_query, data=df).generate_plot(
-                    model_name=str(model_name)
-                )
+                with st.expander("SQL Code"):
+                    st.code(sql_query)
 
-                with st.expander("JS Plot Code"):
-                    st.code(html_plot_js, language="javascript")
+                results = response.extra_info["result"]
+                if len(results) == 1 and results[0][0] is None:
+                    st.markdown("No data available.")
+                else:
+                    df = pd.DataFrame(results)
+                    st.dataframe(df)
+                    st.markdown(":blue[Plotting the data. Please wait...]")
+                    html_plot_js = JSCodePlotGenerator(sql_query=sql_query, data=df).generate_plot(
+                        model_name=str(model_name)
+                    )
 
-                html(html_plot_js, scrolling=True, height=500)
+                    with st.expander("JS Plot Code"):
+                        st.code(html_plot_js, language="javascript")
 
-            st.session_state.messages.append({"role": "assistant", "content": {
-                    "query": sql_query,
-                    "dataframe": df,
-                    "plot_code": html_plot_js
-                }
-            })
+                    html(html_plot_js, scrolling=True, height=500)
+
+                    st.session_state.messages.append({"role": "assistant", "content": {
+                            "query": sql_query,
+                            "dataframe": df,
+                            "plot_code": html_plot_js
+                        }
+                    })
 
     except Exception as ex:
         st.markdown(f":red[{ex}]")
