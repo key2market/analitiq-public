@@ -1,4 +1,4 @@
-"""Class to generate JS plots for the NL2SQL project."""
+"""Class to generate JS plots for the Analitiq."""
 import io
 from typing import Type, TypeVar
 
@@ -22,13 +22,15 @@ There is an existing javascript global variable called '{data_variable_name}' th
 the data from the query above as a json object.
 Create javascript code that uses plotly.js to visualize it in the most sensible way possible.
 Plot inside 'plot' div. Return only the javascript code with no other explanations.
+Make sure your response only includes javascript code.
+Do not add any explanation to your response.
 """
 
 T = TypeVar("T", bound="JSCodePlotGenerator")
 
 
 class JSCodePlotGenerator(object):
-    """Class to generate JS plots for the NL2SQL project."""
+    """Class to generate JS plots for the Analitiq project."""
 
     def __init__(self: Type[T], sql_query: str, data: pd.DataFrame) -> None:
         """Initialize the plot generator.
@@ -50,11 +52,11 @@ class JSCodePlotGenerator(object):
                 continue
         return df
 
-    def generate_plot(self: Type[T], model_name: str = "gpt-3.5-turbo") -> str:
+    def generate_plot(self: Type[T], model_name: str = "gpt-4") -> str:
         """Generate the plot."""
         if self.data.empty:
             # TODO: create template
-            return "<p>Nothing to Show</p>"
+            return "<p>No data available.</p>"
 
         data_variable_name = "queried_data"
         llm = OpenAI(temperature=0, model_name=model_name)

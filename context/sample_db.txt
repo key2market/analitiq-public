@@ -1,0 +1,112 @@
+Analitiq sample database is a playground where you can explore and understand what Analitiq is capable of doing. The sample database represents data for a fictional website, where users buy and sell tickets online for sporting events, shows, and concerts. In this data, Analitiq can identify ticket movement over time, success rates for sellers, and the best-selling events, venues, and seasons. Stakeholders can use these insights to provide incentives to buyers and sellers who frequent the site, to attract new users, and to drive advertising and promotions.
+
+Here is an example query you would have to run to find the top five sellers in San Diego, based on the number of tickets sold in 2008:
+
+select sellerid, username, (firstname ||' '|| lastname) as name,
+city, sum(qtysold)
+from sales, date, users
+where sales.sellerid = users.userid
+and sales.dateid = date.dateid
+and year = 2008
+and city = 'San Diego'
+group by sellerid, username, name, city
+order by 5 desc
+limit 5;
+
+sellerid | username | name | city | sum
+----------+----------+-------------------+-----------+-----
+49977 | JJK84WTE | Julie Hanson | San Diego | 22
+19750 | AAS23BDR | Charity Zimmerman | San Diego | 21
+29069 | SVL81MEQ | Axel Grant | San Diego | 17
+43632 | VAG08HKW | Griffin Dodson | San Diego | 16
+36712 | RXT40MKU | Hiram Turner | San Diego | 14
+(5 rows)
+
+The database used for the examples in this guide contains a small data set; the two fact tables each contain less than 200,000 rows, and the dimensions range from 11 rows in the CATEGORY table up to about 50,000 rows in the USERS table.
+
+
+====================
+CATEGORY table
+
+CATEGORY table categorizes the types of events for which tickets are sold. It includes identifiers and names for different event groups and specific event types, along with detailed descriptions.
+Column name	Data type	Description
+CATID	SMALLINT	Primary key, a unique ID value for each row. Each row represents a specific type of event for which tickets are bought and sold.
+CATGROUP	VARCHAR(10)	Descriptive name for a group of events, such as Shows and Sports.
+CATNAME	VARCHAR(10)	Short descriptive name for a type of event within a group, such as Opera and Musicals.
+CATDESC	VARCHAR(50)	Longer descriptive name for the type of event, such as Musical theatre.
+
+====================
+DATE table
+The DATE table tracks calendar days, storing information such as the exact date, day of the week, week number, month, quarter, year, and holiday status. It’s key for analyzing events based on time frames.
+Column name	Data type	Description
+DATEID	SMALLINT	Primary key, a unique ID value for each row. Each row represents a day in the calendar year.
+CALDATE	DATE	Calendar date, such as 2008-06-24.
+DAY	CHAR(3)	Day of week (short form), such as SA.
+WEEK	SMALLINT	Week number, such as 26.
+MONTH	CHAR(5)	Month name (short form), such as JUN.
+QTR	CHAR(5)	Quarter number (1 through 4).
+YEAR	SMALLINT	Four-digit year (2008).
+HOLIDAY	BOOLEAN	Flag that denotes whether the day is a public holiday (U.S.).
+
+====================
+EVENT table
+Central to the database, EVENT table lists individual events, including their unique identifiers, venues, categories, dates, names, and start times. It’s crucial for understanding what events occur, where, and when.
+Column name	Data type	Description
+EVENTID	INTEGER	Primary key, a unique ID value for each row. Each row represents a separate event that takes place at a specific venue at a specific time.
+VENUEID	SMALLINT	Foreign-key reference to the VENUE table.
+CATID	SMALLINT	Foreign-key reference to the CATEGORY table.
+DATEID	SMALLINT	Foreign-key reference to the DATE table.
+EVENTNAME	VARCHAR(200)	Name of the event, such as Hamlet or La Traviata.
+STARTTIME	TIMESTAMP	Full date and start time for the event, such as 2008-10-10 19:30:00.
+
+====================
+VENUE table
+VENUE table details the venues where events occur, including unique identifiers, names, cities, states, and seating capacities. It provides insights into the physical locations of events.
+Column name	Data type	Description
+VENUEID	SMALLINT	Primary key, a unique ID value for each row. Each row represents a specific venue where events take place.
+VENUENAME	VARCHAR(100)	Exact name of the venue, such as Cleveland Browns Stadium.
+VENUECITY	VARCHAR(30)	City name, such as Cleveland.
+VENUESTATE	CHAR(2)	Two-letter state or province abbreviation (United States and Canada), such as OH.
+VENUESEATS	INTEGER	Maximum number of seats available at the venue, if known, such as 73200. For demonstration purposes, this column contains some null values and zeroes.
+
+====================
+USERS table
+The USERS table holds information about registered users, who can be either buyers or sellers. It includes comprehensive personal details like names, locations, contact information, and preferences.
+Column name	Data type	Description
+USERID	INTEGER	Primary key, a unique ID value for each row. Each row represents a registered user (a buyer or seller or both) who has listed or bought tickets for at least one event.
+USERNAME	CHAR(8)	An 8-character alphanumeric username, such as PGL08LJI.
+FIRSTNAME	VARCHAR(30)	The user’s first name, such as Victor.
+LASTNAME	VARCHAR(30)	The user’s last name, such as Hernandez.
+CITY	VARCHAR(30)	The user’s home city, such as Naperville.
+STATE	CHAR(2)	The user’s home state, such as GA.
+EMAIL	VARCHAR(100)	The user’s email address; this column contains random Latin values, such as turpis@accumsanlaoreet.org.
+PHONE	CHAR(14)	The user’s 14-character phone number, such as (818) 765-4255.
+LIKESPORTS, …	BOOLEAN	A series of 10 different columns that identify the user’s likes and dislikes with true and false values.
+
+====================
+LISTING table
+Focused on ticket listings, LISTING table contains details about each ticket batch posted for sale, including the listing ID, seller, event, date, number of tickets, and pricing. It’s vital for tracking ticket availability and prices.
+Column name	Data type	Description
+LISTID	INTEGER	Primary key, a unique ID value for each row. Each row represents a listing of a batch of tickets for a specific event.
+SELLERID	INTEGER	Foreign-key reference to the USERS table, identifying the user who is selling the tickets.
+EVENTID	INTEGER	Foreign-key reference to the EVENT table.
+DATEID	SMALLINT	Foreign-key reference to the DATE table.
+NUMTICKETS	SMALLINT	The number of tickets available for sale, such as 2 or 20.
+PRICEPERTICKET	DECIMAL(8,2)	The fixed price of an individual ticket, such as 27.00 or 206.00.
+TOTALPRICE	DECIMAL(8,2)	The total price for this listing (NUMTICKETS*PRICEPERTICKET).
+LISTTIME	TIMESTAMP	The full date and time when the listing was posted, such as 2008-03-18 07:19:35.
+
+====================
+SALES table
+SALES table records completed ticket sales transactions. It includes details about the sale, listing, seller, buyer, event, date, quantity sold, price, commission, and sale completion time. It’s essential for analyzing sales activity and financials.
+Column name	Data type	Description
+SALESID	INTEGER	Primary key, a unique ID value for each row. Each row represents a sale of one or more tickets for a specific event, as offered in a specific listing.
+LISTID	INTEGER	Foreign-key reference to the LISTING table.
+SELLERID	INTEGER	Foreign-key reference to the USERS table (the user who sold the tickets).
+BUYERID	INTEGER	Foreign-key reference to the USERS table (the user who bought the tickets).
+EVENTID	INTEGER	Foreign-key reference to the EVENT table.
+DATEID	SMALLINT	Foreign-key reference to the DATE table.
+QTYSOLD	SMALLINT	The number of tickets that were sold, from 1 to 8. (A maximum of 8 tickets can be sold in a single transaction.)
+PRICEPAID	DECIMAL(8,2)	The total price paid for the tickets, such as 75.00 or 488.00. The individual price of a ticket is PRICEPAID/QTYSOLD.
+COMMISSION	DECIMAL(8,2)	The 15% commission that the business collects from the sale, such as 11.25 or 73.20. The seller receives 85% of the PRICEPAID value.
+SALETIME	TIMESTAMP	The full date and time when the sale was completed, such as 2008-05-24 06:21:47.

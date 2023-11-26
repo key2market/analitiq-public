@@ -137,3 +137,6 @@ dmypy.json
 include
 bin
 pyvenv.cfg
+
+# local chroma
+.chroma

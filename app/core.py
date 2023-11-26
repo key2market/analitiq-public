@@ -1,5 +1,4 @@
 """Streamlit app generate SQL statements from natural language queries."""
-import collections
 import os
 import sys
 from typing import Any, Optional, Union
@@ -18,6 +17,9 @@ from llama_index import (
     ServiceContext,
     SQLDatabase,
 )
+
+from llama_index import SimpleDirectoryReader
+
 from llama_index.composability import ComposableGraph
 from llama_index.indices.base import BaseGPTIndex
 from llama_index.indices.common.struct_store.schema import SQLContextContainer
@@ -232,46 +234,62 @@ def main() -> int:
     st.set_page_config(
         layout="wide",
         page_icon="docs/img/analitiq_logo.png",
-        page_title="Analitiq POC"
+        page_title="Analitiq Analyst"
     )
-    # st.title("Natural Language to SQL Query Executor")
-    # st.markdown(
-    #     "_A proof-of-concept to demonstrate the power of large "
-    #     "language models(LLMS) in rapidly and effectively extracting valuable insights from "
-    #     "your data. We greatly appreciate your thoughts and suggestions. "
-    #     "Visit us at www.sagedata.net._"
-    # )
 
-    st.title("Analitiq POC")
+    st.markdown("""
+        <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+        <style>
+            .reportview-container {
+                margin-top: -2em;
+            }
+            #MainMenu {visibility: hidden;}
+            .stDeployButton {display:none;}
+            footer {visibility: hidden;}
+            #stDecoration {display:none;}
+        </style>
+    """, unsafe_allow_html=True)
+
+    st.title("Step 2 - Ask Analitiq")
+
     st.markdown(
-        "_A proof-of-concept Analitiq application to let your data talk back to you. "
-        "This app is connected to a sample e-commerce database of a fictional website, where users buy and sell tickets online for sporting events, shows, and concerts. More details about the data at https://www.analitiq.ai/sample-data-structure/._"
+        "Transforming Conversations into Insights.\n"
+        "Try asking _Show me my top 10 customers_ or _Give me revenues by month for 2018_"
     )
 
-    # Left pane for Redshift db_engine input controls
+    # Left pane for db_engine input controls
     with st.sidebar:
         st.image("docs/img/analitiq_logo.png", use_column_width=True)
-        # st.header("OpenAI API Key")
-        # openai_api_key = st.text_input("OpenAI API Key", key="openai_api_key", type="password")
-        # "[Get an OpenAI API key](https://platform.openai.com/account/api-keys)"
-        # btn_openai_api_key = st.button("Enter")
     
-        st.header("Connect to Database")
+        st.header("Step 1 - Connect to Database")
+
+        st.markdown(
+            "This app is connected to a sample e-commerce database of a fictional website, where users buy and sell tickets online for sporting events, shows, and concerts. "
+            "More details about the data at [Analitiq website](https://www.analitiq.ai/sample-data-structure/)._"
+        )
+
         db_credentials = st.secrets.get("db_credentials", {})
-        # db_credentials = {}
-        dialect = st.selectbox("Database", ("redshift", "postgresql"))
-        host = st.text_input("Host", value=db_credentials.get("host", ""))
-        port = st.number_input(
-            "Port", min_value=1, max_value=65535, value=db_credentials.get("port", 5439)
-        )
-        dbname = st.text_input("Database name", value=db_credentials.get("database", ""))
-        user = st.text_input("Username", value=db_credentials.get("username", ""))
-        password = st.text_input(
-            "Password", type="password", value=db_credentials.get("password", "")
-        )
-        schema = st.text_input(
-            "Schema", disabled=True, value=db_credentials.get("schema", "public")
-        )
+
+        with st.expander("Database credentials:"):
+            dialect = st.selectbox("Database", ("redshift", "postgresql"))
+            host = st.text_input("Host", value=db_credentials.get("host", ""))
+            port = st.number_input(
+                "Port", min_value=1, max_value=65535, value=db_credentials.get("port", 5439)
+            )
+            dbname = st.text_input("Database name", value=db_credentials.get("database", ""))
+            user = st.text_input("Username", value=db_credentials.get("username", ""))
+            password = st.text_input(
+                "Password", type="password", value=db_credentials.get("password", "")
+            )
+            schema = st.text_input(
+                "Schema", disabled=True, value=db_credentials.get("schema", "public")
+            )
 
         connect_button = st.button("Connect")
 
@@ -289,36 +307,12 @@ def main() -> int:
         if not db_engine:
             return 2
 
-        # openai_api_key = st.text_input(
-        #     "OpenAI API Key",
-        #     value=st.secrets.get("openai_api_key", st.session_state.get("openai_api_key", "")),
-        #     type="password",
-        # )
-
-        # btn_openai_api_key = st.button("Enter")
-
-        # if not openai_api_key and not btn_openai_api_key:
-        #     return 3
-        # session_openai_key = st.session_state.get("openai_api_key")
-
-        # keep streamlit state that openai_api_key had been entered
-        # if not session_openai_key or session_openai_key != openai_api_key:
-        #     st.session_state.openai_api_key = openai_api_key
-
         st.session_state.openai_api_key = st.secrets.get("openai_api_key", st.session_state.get("openai_api_key", ""))
 
         # openai libs access the key via this environment variable
         os.environ["OPENAI_API_KEY"] = st.session_state.openai_api_key
 
-        # model_name = st.selectbox(
-        #     "Choose OpenAI model",
-        #     ("_Choose a model_", "gpt-3.5-turbo", "text-davinci-003"),
-        # )
-
         model_name = "gpt-4"
-
-        if str(model_name).startswith("_"):
-            return 4
 
         cache_invalidation_triggers = {
             "connection_string": connection_string,
@@ -327,71 +321,18 @@ def main() -> int:
             "schema": str(schema),
         }
 
-        # Create LLama DB wrapper
-        st.markdown(
-            (
-                ":blue[Inspecting data in "
-                f":green[**_{dbname}.{schema}_**]]"
-            )
-        )
-
         sql_database = create_llama_db_wrapper(db_engine, **cache_invalidation_triggers)
 
-        with st.expander(f"Discovered tables in {dbname}.{schema}"):
-            st.write(sql_database._all_tables)
-
-        # build llama sqlindex
-        st.markdown(":blue[Build a table-schema index.]")
         table_schema_index, context_builder = build_table_schema_index(
             sql_database, **cache_invalidation_triggers
         )
 
-        query_history = st.session_state.get("query_history", collections.deque(maxlen=10))
-
-        if query_history:
-            for idx, msg in enumerate(query_history):
-                message(msg["user"], is_user=True, key=str(f"{idx}_user"))
-                if msg.get("generated"):
-                    message(msg.get("generated"), is_user=False, key=str(f"{idx}_sql"))
-        else:
-            st.session_state["query_history"] = query_history
-
-        st.text_input("Ask Analitiq:", key="query_str")
-
-        dbt_sources_yaml_toggle = st.checkbox(
-            "Add data description for additional context",
-            key="dbt_sources_yaml_toggle",
-        )
-
-        if dbt_sources_yaml_toggle:
-            st.text_area("Paste your data description:", key="dbt_sources_yaml_str")
-
-        yaml_cfg_is_wrong = st.session_state.get(
-            "dbt_sources_yaml_toggle"
-        ) and not st.session_state.get("dbt_sources_yaml_str")
-
-        run = st.button(
-            "Ask",
-            disabled=not st.session_state.get("query_str") or yaml_cfg_is_wrong,
-            on_click=lambda: query_history.append({"user": st.session_state.get("query_str")}),
-        )
-
-        if not run:
-            return 5
-
-        dbt_sources_yaml_toggle = st.session_state.get("dbt_sources_yaml_toggle", False)
-        dbt_sources_yaml_str = st.session_state.get("dbt_sources_yaml_str", "")
-
-        cache_invalidation_triggers["dbt_sources_yaml_toggle"] = dbt_sources_yaml_toggle
-        cache_invalidation_triggers["dbt_sources_yaml_str"] = dbt_sources_yaml_str
-
         index_to_query = table_schema_index
 
-        if dbt_sources_yaml_toggle:
-            metadata_index = GPTListIndex.from_documents([Document(dbt_sources_yaml_str)])
-
-            # build ComposableGraph based on table schema index and
-            # DBT sources yaml index
+        if "is_sample_data_available" not in st.session_state:
+            sample_data_docs = SimpleDirectoryReader(input_dir="context").load_data()
+            print(f"Loaded {len(sample_data_docs)} documents.")
+            metadata_index = GPTListIndex.from_documents(sample_data_docs)
             index_to_query = ComposableGraph.from_indices(
                 GPTListIndex,
                 [table_schema_index, metadata_index],
@@ -400,81 +341,97 @@ def main() -> int:
                     "DBT sources yaml",
                 ],
             )
+            st.session_state.is_sample_data_available = True
 
-            # st.markdown(
-            #    ":blue[Query the composable graph index consisting of DBT "
-            #    "sources.yaml index and the table-schema index]"
-            #)
-        else:
-            st.markdown(":blue[Query the table-schema index]")
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+        
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                if message["role"] == "user":
+                    st.markdown(message["content"])
+                else:
+                    st.markdown(message["content"]["query"])
+                    st.dataframe(message["content"]["dataframe"])
+                    with st.expander("JS Plot Code"):
+                        st.code(message["content"]["plot_code"], language="javascript")
+                    html(message["content"]["plot_code"], scrolling=True, height=500)
+            
+        if prompt := st.chat_input("Ask Analitiq"):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.markdown(prompt)
 
-        # return a condensed summary for the last query
-        condensed_query_str = RequestsSummaryBuilder.build_summary(
-            map(lambda x: x["user"], query_history),
-            model_name=str(model_name),
-        )
-        # TODO: add the condensed query to the history of user messages
-        LOGGER.info("Generated condensed query: %s", condensed_query_str)
+            with st.chat_message("assistant"):
+                st.markdown(":blue[Prepare and execute query...]")
 
-        # cached resource
-        sql_context_container = build_sql_context_container(
-            context_builder,
-            index_to_query,
-            condensed_query_str,
-            **cache_invalidation_triggers,
-        )
+                history_user_content = [
+                    x["content"] for x in st.session_state.messages if x["role"] == "user"
+                ]
+                condensed_query_str = RequestsSummaryBuilder.build_summary(
+                    history_user_content,
+                    model_name=str(model_name),
+                )
 
-        with st.expander("SQL context"):
-            st.markdown(
-                ":blue[Generated context for SQL query preparation:] "
-                f":green[ {sql_context_container.context_str} ]"
-            )
+                sql_context_container = build_sql_context_container(
+                    context_builder,
+                    index_to_query,
+                    condensed_query_str,
+                    **cache_invalidation_triggers,
+                )
 
-        # return
-        st.markdown(":blue[Prepare and execute query...]")
+                try:
+                    # cached resource
+                    index = create_sql_struct_store_index(
+                        sql_database,
+                        _sql_context_container=sql_context_container,
+                        connection_string=connection_string,
+                        query_str=condensed_query_str,
+                    )
+                    # cached resource
+                    response = query_sql_structure_store(
+                        _index=index,
+                        query_str=condensed_query_str,
+                        **cache_invalidation_triggers,
+                    )
+                except Exception as ex:
+                    st.toast(
+                        ":red[We couldn't generate a valid SQL query. "
+                        "Please try to refine your question with schema, "
+                        f"table or column names. Exception info:\n{ex}]"
+                    )
+                    return 6
 
-        response: Union[RESPONSE_TYPE, None] = None
-        try:
-            # cached resource
-            index = create_sql_struct_store_index(
-                sql_database,
-                _sql_context_container=sql_context_container,
-                connection_string=connection_string,
-                query_str=condensed_query_str,
-            )
-            # cached resource
-            response = query_sql_structure_store(
-                _index=index,
-                query_str=condensed_query_str,
-                **cache_invalidation_triggers,
-            )
-        except Exception as ex:
-            st.markdown(
-                ":red[We couldn't generate a valid SQL query. "
-                "Please try to refine your question with schema, "
-                f"table or column names. Exception info:\n{ex}]"
-            )
-            return 6
+                if not response:
+                    return 7
+                
+                sql_query = response.extra_info["sql_query"]
+                with st.expander("SQL Code"):
+                    st.code(sql_query)
 
-        if not response:
-            return 7
+                results = response.extra_info["result"]
+                if len(results) == 1 and results[0][0] is None:
+                    st.markdown("No data available.")
+                else:
+                    df = pd.DataFrame(results)
+                    st.dataframe(df)
+                    st.markdown(":blue[Plotting the data. Please wait...]")
+                    html_plot_js = JSCodePlotGenerator(sql_query=sql_query, data=df).generate_plot(
+                        model_name=str(model_name)
+                    )
 
-        sql_query = response.extra_info["sql_query"]
-        query_history[-1]["generated"] = response.extra_info["sql_query"]
-        message(sql_query, key=str(f"{len(query_history)}_sql"))
-        df = pd.DataFrame(response.extra_info["result"])
-        st.dataframe(df)
+                    with st.expander("JS Plot Code"):
+                        st.code(html_plot_js, language="javascript")
 
-        st.markdown(":blue[Plotting the data. Please wait...]")
+                    html(html_plot_js, scrolling=True, height=500)
 
-        html_plot_js = JSCodePlotGenerator(sql_query=sql_query, data=df).generate_plot(
-            model_name=str(model_name)
-        )
+                    st.session_state.messages.append({"role": "assistant", "content": {
+                            "query": sql_query,
+                            "dataframe": df,
+                            "plot_code": html_plot_js
+                        }
+                    })
 
-        with st.expander("JS Plot Code"):
-            st.code(html_plot_js, language="javascript")
-
-        html(html_plot_js, scrolling=True, height=500)
     except Exception as ex:
         st.markdown(f":red[{ex}]")
         raise ex
