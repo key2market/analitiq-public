@@ -140,3 +140,5 @@ pyvenv.cfg
 
 # local chroma
 .chroma
+/myenv/
+/.idea/

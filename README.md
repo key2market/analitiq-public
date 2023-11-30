@@ -44,8 +44,13 @@ schema = "your-schema"
 ```
 
 ### Loading the Context
-Providing information about your table structure in `context/sample_db.txt` enhances query understanding and accuracy.
-
+Providing information about your table structure in `context/sample_db.txt` enhances query understanding and accuracy of the responses.
+The context are store in a ChromaDB database. 
+If you would like to use external ChromaDB, set up the environmental variables for the external host and port.
+```
+CHROMA_DB_HOST = os.environ.get("CHROMA_DB_HOST")
+CHROMA_DB_PORT = os.environ.get("CHROMA_DB_PORT")
+```
 ### Launch the Analitiq app
 After the repo is cloned, navigate to the directory of the docker file and launch the docker container.
 ```
