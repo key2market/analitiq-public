@@ -124,7 +124,7 @@ def build_table_schema_index(
         print(f"Fail to connect to remote Chroma DB at {CHROMA_DB_HOST}:{CHROMA_DB_PORT}. Use in-memory Chroma DB instead.")
         chroma_client = chromadb.Client()
 
-    chroma_collection = chroma_client.create_collection("table_schema")
+    chroma_collection = chroma_client.get_or_create_collection("table_schema")
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
